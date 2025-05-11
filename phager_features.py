@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Created: Mon Jul  9 20:28:32 2018
-# Last changed: Time-stamp: <Last changed 2025-05-11 12:38:57 by Thomas Sicheritz-Pontén, thomas>
+# Last changed: Time-stamp: <Last changed 2025-05-11 16:48:23 by Thomas Sicheritz-Pontén, thomas>
 
 import string, re
 import os, sys, subprocess
@@ -547,6 +547,39 @@ def dna_aa_df_to_features(var, skip_pep_freq=False):
     DF['genome_Nratio'] = Nratio
     return DF
 
+def call_genes(file, outdir='.', overwrite=False):
+    import pyrodigal
+    seqs_df_file = f"{outdir}/{os.path.basename(file).split('.fasta')[0]}.dna_aa.pa"
+    if os.path.exists(seqs_df_file) and not overwrite: return pd.read_parquet(seqs_df_file)
+    ic("working on", file)
+    handle = gzip.open(file, 'rt') if file.endswith('.gz') else open(file)
+    entries = list(SimpleFastaParser(handle))
+    name = entries[0][0]
+    meta = True
+    p = pyrodigal.GeneFinder(meta=meta)
+    length = sum([len(seq) for name, seq in entries])
+    Nratio = sum([seq.count('N') for name, seq in entries])/length
+    genes = []
+    for name, seq in entries:
+        name = name.split()[0]
+        for i, gene in enumerate(p.find_genes(seq)):
+            start = gene.begin
+            end = gene.end
+            strand = gene.strand
+            dna_sequence = str(Seq(seq[(start-1):end]).reverse_complement()) if strand == -1 else str(seq)[(start-1):end]
+            aa_sequence = create_validate_amino_acids_seq(str(gene.translate()).strip('*'))
+            gene_name = f'{name}_{i+1}_{start}_{end}'
+            genes.append([gene_name, start, end, strand, dna_sequence, aa_sequence])
+
+    df = pd.DataFrame(genes, columns = 'gene start end strand dna aa'.split())
+    coding_capacity = df.aa.str.len().sum()*3/length
+    df['coding_capacity'] = coding_capacity
+    df['Nratio'] = Nratio
+    df['length'] = length
+    df['GC'] = GC(''.join([seq for name, seq in entries]))
+    ic("Saving to", seqs_df_file)
+    df.to_parquet(seqs_df_file)
+    return df
 
 def create_triplets_from_fna(file, outfile=None, outdir='.', genome = None, min_size=5, dont_use = None, return_df=False):
     if not return_df and os.path.exists(outfile): return
@@ -576,114 +609,4 @@ def create_triplets_from_fna(file, outfile=None, outdir='.', genome = None, min_
     if return_df: return dfT
     
     dfT.to_parquet(outfile)
-
-
-if __name__ == '__main__':
-    from optparse import OptionParser
-    usage = "%prog [options] file (or - for stdin)\n"
-    parser = OptionParser(usage)
-    parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default = 0)
-    parser.add_option("-S", "--add_sequences", action="store_true", dest="add_sequences", default = False)
-    parser.add_option("-L", "--add_locations", action="store_true", dest="add_locations", default = False)
-    parser.add_option("-D", "--DNA", action="store_true", dest="input_is_DNA", default = False)
-    parser.add_option("-G", "--genomic", action="store_true", default = False)
-    parser.add_option("--DNA-only", action="store_true", dest="DNA_only", default = False)
-    parser.add_option("--split", action="store_true", dest="split", default = False)        
-    parser.add_option("-m", "--min_length", action="store", type="int", dest="min_length", default = 10)
-    parser.add_option("-f", "--format", action="store", type = "choice", dest="format", choices = ("hdf","csv", "csv.gz", 'pa'), default = 'pa')
-    parser.add_option("-P", "--skip_pep_freq", action="store_true", default = 0)
-    parser.add_option("-o", "--outfile", action="store", type=str, default = '')
-    parser.add_option("-T", "--triplets", action="store", type=str, default = False)
-
     
-    (options, args) = parser.parse_args()
-    verbose = options.verbose
-    min_length = options.min_length
-    input_is_DNA = options.input_is_DNA
-    use_genomic = options.genomic
-    splitted = options.split
-    skip_pep_freq = options.skip_pep_freq
-    save_file = options.outfile
-    triplets = options.triplets
-    
-    fasta_file = args[0]
-    save_file = save_file if len(save_file) >1 else os.path.basename(fasta_file).replace('.gz','.splitted' if splitted else '') + '.' + options.format
-    if os.path.exists(save_file): sys.exit(0)
-        
-    timer_start = time.time()
-
-    if triplets:
-        outfile = save_file.replace('.pa', '.trp.pa')
-        create_triplets_from_fna(fasta_file, outfile)
-    if use_genomic:
-        df = create_genomic_features_for_files(args, skip_pep_freq=skip_pep_freq)
-        df.to_parquet(save_file)
-        sys.exit(0)
-
-    fid = gzip.open(fasta_file, 'rt') if fasta_file.endswith('.gz') else open(fasta_file)
-
-    failed_seqs = 0
-    msg("Reading", fasta_file)
-    handle = gzip.open(fasta_file, 'rt') if fasta_file.endswith('.gz') else open(fasta_file)
-    entries = list(SimpleFastaParser(handle))
-
-    entries = [x for x in entries if x[0].find('pseudogene') == -1]
-    
-    if input_is_DNA:
-        msg("Running on DNA")
-        DNA_entries = []
-        for n, (name, seq) in enumerate(entries):
-            seq = seq.strip('*').upper()
-            if len(seq) < min_length*3: continue
-
-            DNA_entries.append((name, seq))
-
-        msg("Failed sequences", len(entries) - len(DNA_entries))
-
-        locations = [extract_location(x) for x in DNA_entries]
-        DNA_entries = [(x[0], x[1]) for x in DNA_entries]
-        
-        if options.DNA_only:
-            DF = RunDNA(DNA_entries, verbose=verbose)
-
-        else:
-
-            AA_entries = [(x[0], str(Seq(x[1][:(len(x[1])//3)*3]).translate().strip('*'))) for x in DNA_entries]
-            AA_entries = [(x[0], create_validate_amino_acids_seq(x[1])) for x in AA_entries]
-
-            DF, DF_AA, DF_DNA = RunDNAandAA(DNA_entries, AA_entries, locations, verbose = verbose)
-            if options.add_sequences: DF.insert(0, 'DNAseq', [x[1] for x in DNA_entries])
-            if options.add_locations:
-                DF.insert(0, 'gene_start', [x[0] for x in locations])
-                DF.insert(0, 'gene_end', [x[1] for x in locations])
-                DF.insert(0, 'gene_strand', [x[2] for x in locations])
-            
-    else:
-        msg("Running on AA")
-        AA_entries = []
-        for n, (name, seq) in enumerate(entries):
-            seq = seq.strip('*').upper()
-            if len(seq) < min_length: continue
-            seq = create_validate_amino_acids_seq(seq)
-            #name = fix_name(name)
-            AA_entries.append((name, seq))
-
-        msg("Failed sequences", len(entries) - len(AA_entries))
-        DF = Run(AA_entries, verbose=verbose, splitted=splitted, skip_pep_freq=skip_pep_freq)
-
-    DF.index.name = 'name'
-    if options.add_sequences: DF.insert(0, 'AAseq', [x[1] for x in AA_entries])
-    runtime = time.time() - timer_start
-    
-    msg("Execution time for %d sequences: %s (%s per 1000 sequences)" % (len(entries), str(timedelta(seconds=runtime)), round(1000*runtime/len(entries),2)))
-    #msg(DF.describe())
-
-    msg("Saving to", save_file)
-    if options.format == 'hdf':
-        DF.to_hdf(save_file, key="df", complib='blosc:zstd', complevel=2)
-    elif options.format.startswith('csv'):
-        DF.to_csv(save_file, sep='\t', index=True)
-    elif options.format.startswith('pa'):
-        DF.to_parquet(save_file, index=True)
-
-    print(biopython_proteinanalysis_seq.cache_info())

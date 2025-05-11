@@ -24,15 +24,17 @@ Phager was trained on biological features of phage and non-phage genes. The scri
 conda create -n phager pandas
 conda activate phager
 pip install tqdm icecream colorama pyrodigal biopython more_itertools lightgbm scikit-learn pyarrow
-git clone git@github.com:ku-cbd/phager.git 
+git clone git@github.com:ku-cbd/phager.git
+cd phager
+
 
 ```
 
 ## Example
 
 ```
-phager.py -h
-phager.py -a example/contigs.fa -o myresults -v
+python phager.py -h
+python phager.py -a example/contigs.fa -o myresults -v
 ```
 ## References
 

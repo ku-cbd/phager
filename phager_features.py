@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Created: Mon Jul  9 20:28:32 2018
-# Last changed: Time-stamp: <Last changed 2025-05-11 16:48:23 by Thomas Sicheritz-Pontén, thomas>
+# Last changed: Time-stamp: <Last changed 2025-05-12 17:23:26 by Thomas Sicheritz-Pontén, thomas>
 
 import string, re
 import os, sys, subprocess
@@ -73,7 +73,7 @@ def split_protein(seq, Nterm = 30, Cterm=30, Mminsize=50):
 
 def extract_location(entry):
     header, seq = entry
-    rx = re.compile('([0-9]+)\.\.([0-9]+)')
+    rx = re.compile(r'([0-9]+)\.\.([0-9]+)')
     try:
         location = rx.search(header).group()
     except:

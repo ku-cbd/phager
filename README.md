@@ -7,7 +7,8 @@ Anastasiya Gæde and Thomas Sicheritz-Pontén
 
 # General information
 Phager was trained on biological features of phage and non-phage genes. The script phager.py takes a raw or gzipped FASTA file as input, performs gene calling, and generates biological features for each gene. These features are then combined into feature triplets, corresponding to gene triplets along a shifting reading frame. The gene feature triplets are then used by a LightGBM model to determine whether the input genome is a phage.
-![Phager_img 001](https://github.com/user-attachments/assets/69961a06-c552-4315-a08c-b563a1dad561)
+<img width="6000" height="4200" alt="phager_overview" src="https://github.com/user-attachments/assets/1ade0697-97e8-49bf-8c09-d7d3beda2bfe" />
+
 
 
 

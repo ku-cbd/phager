@@ -47,6 +47,7 @@ Pyrodigal (Larralde, 2022), a Python library binding to Prodigal (Hyatt et al., 
 Sirén,K., Millard,A., Petersen,B., Gilbert,M.T.P., Clokie,M.R.J. and Sicheritz-Pontén,T. (2020) Rapid discovery of novel prophages using biological feature engineering and machine learning. 10.1101/2020.08.09.243022. https://www.biorxiv.org/content/10.1101/2020.08.09.243022v1.abstract
 
 ## Citation
-**Large-scale analysis of bacterial genomes reveals thousands of lytic phages**
+##**Large-scale analysis of bacterial genomes reveals thousands of lytic phages**
+
 ***Alexander Perfilyev, Anastasiya Gæde, Steve Hooton, Sara A. Zahran, Panos G. Kalatzis, Caroline Sophie Winther-Have, Rodrigo Ibarra Chavez, Rachael C. Wilkinson, Anisha M. Thanki, Zhengjie Liu, Qing Zhang, Qianghua Lv, Yuqing Liu, Adriano M. Gigante, Robert J. Atterbury, Bent Petersen, Andrew D. Millard, Martha R. J. Clokie & Thomas Sicheritz-Pontén***
 Nature Microbiology volume 11, pages42–52 (2026); doi: https://doi.org/10.1038/s41564-025-02203-4

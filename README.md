@@ -48,5 +48,5 @@ Sirén,K., Millard,A., Petersen,B., Gilbert,M.T.P., Clokie,M.R.J. and Sicheritz-
 
 ## Citation
 **Large-scale analysis of bacterial genomes reveals thousands of lytic phages**
-Alexander Perfilyev, Anastasiya Gæde, Steve Hooton, Sara A. Zahran, Panos G. Kalatzis, Caroline Sophie Winther-Have, Rodrigo Ibarra Chavez, Rachael C. Wilkinson, Anisha M. Thanki, Zhengjie Liu, Qing Zhang, Qianghua Lv, Yuqing Liu, Adriano M. Gigante, Robert J. Atterbury, Bent Petersen, Andrew D. Millard, Martha R. J. Clokie & Thomas Sicheritz-Pontén
+***Alexander Perfilyev, Anastasiya Gæde, Steve Hooton, Sara A. Zahran, Panos G. Kalatzis, Caroline Sophie Winther-Have, Rodrigo Ibarra Chavez, Rachael C. Wilkinson, Anisha M. Thanki, Zhengjie Liu, Qing Zhang, Qianghua Lv, Yuqing Liu, Adriano M. Gigante, Robert J. Atterbury, Bent Petersen, Andrew D. Millard, Martha R. J. Clokie & Thomas Sicheritz-Pontén***
 Nature Microbiology volume 11, pages42–52 (2026); doi: https://doi.org/10.1038/s41564-025-02203-4

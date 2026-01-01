@@ -38,7 +38,7 @@ cd phager
 
 ```
 python phager.py -h
-python phager.py -a example/contigs.fa -o myresults -v
+python phager.py -a example/example_contigs.fasta -o myresults -v
 ```
 ## References
 
